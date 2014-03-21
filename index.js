@@ -14,13 +14,15 @@
  *   "xkcd comic=123" or "xkcd 123"
  */
 
-var request = require('request');
 var format = require('util').format;
 
 var Promise = require('es6-promise').Promise;
 
+var request;
+var log = console.log.bind(console, '[xkcd]');
 
 module.exports = function(corsica) {
+  request = corsica.request;
 
   corsica.on('content', function(content) {
     var match = /xkcd.com\/?(\d+)?/.exec(content.url);
@@ -29,7 +31,7 @@ module.exports = function(corsica) {
         .then(function(comicContent) {
           return corsica.utils.merge(content, comicContent);
         }, function (err) {
-          console.warn('[xkcd] Could not get info for comic at', content.url);
+          log('Could not get info for comic at', content.url);
           return content;
         });
     } else {
@@ -39,18 +41,21 @@ module.exports = function(corsica) {
 
   // command-compatible short code.
   corsica.on('xkcd', function(content) {
-    console.log('[xkcd]', 'on xkcd', content);
+    log('on xkcd', content);
     var comic = content.comic || content._args[0];
     makeComicContent(comic)
       .then(function(comicContent) {
-        corsica.sendMessage('content', corsica.utils.merge(content, comicContent));
+        var c = corsica.utils.merge(content, comicContent);
+        corsica.sendMessage('content', c);
+      }, function(err) {
+        console.warn('[xkcd]', err);
       });
     return content;
   });
 };
 
 function makeComicContent(comicNum) {
-  console.log('[xkcd]', 'makeComicContent', 'comicNum =', comicNum);
+  log('makeComicContent', 'comicNum =', comicNum);
   return new Promise(function (resolve, reject) {
     var url;
 
@@ -79,6 +84,5 @@ function makeXkcdPage(data) {
     type: 'html',
     content: html,
   };
-  console.log('res:', res);
   return res;
 }
