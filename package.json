@@ -1,6 +1,6 @@
 {
   "name": "corsica-xkcd",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A Corsica plugin to display XKCD comics.",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,9 @@
   "homepage": "https://github.com/mythmon/corsica-xkcd",
   "dependencies": {
     "es6-promise": "~0.1.1",
-    "request": "~2.34.0",
-    "corsica": "~0.1.0"
+    "request": "~2.34.0"
+  },
+  "corsica": {
+    "required-version": ">=0.1"
   }
 }
