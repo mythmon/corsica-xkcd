@@ -18,11 +18,11 @@ var format = require('util').format;
 
 var Promise = require('es6-promise').Promise;
 
-var request;
 var log = console.log.bind(console, '[xkcd]');
+var corsica;
 
-module.exports = function(corsica) {
-  request = corsica.request;
+module.exports = function(corsica_) {
+  corsica = corsica_;
 
   corsica.on('content', function(content) {
     var match = /xkcd.com\/?(\d+)?/.exec(content.url);
@@ -41,37 +41,42 @@ module.exports = function(corsica) {
 
   // command-compatible short code.
   corsica.on('xkcd', function(content) {
-    log('on xkcd', content);
     var comic = content.comic || content._args[0];
     makeComicContent(comic)
       .then(function(comicContent) {
         var c = corsica.utils.merge(content, comicContent);
         corsica.sendMessage('content', c);
       }, function(err) {
-        console.warn('[xkcd]', err);
+        log('[xkcd]', err);
       });
     return content;
   });
 };
 
 function makeComicContent(comicNum) {
-  log('makeComicContent', 'comicNum =', comicNum);
   return new Promise(function (resolve, reject) {
-    var url;
-
     if (!comicNum) {
-      url = 'http://xkcd.com/info.0.json';
-    } else {
-      url = 'http://xkcd.com/' + comicNum + '/info.0.json';
+      comicNum = 'latest';
     }
 
-    request({url: url, json: true}, function(err, res, data) {
-      if (err || res.statusCode >= 400) {
-        reject(err || {statusCode: res.statusCode});
-      } else {
-        resolve(makeXkcdPage(data));
-      }
-    });
+    if (comicNum === 'random') {
+      corsica.http('http://xkcd.com/info.0.json')
+        .then(function(data) {
+          var latestNum = data.num;
+          var randomNum = Math.floor(Math.random() * latestNum) + 1;
+          resolve('http://xkcd.com/' + randomNum + '/info.0.json');
+        });
+    } else if (comicNum === 'latest') {
+      resolve('http://xkcd.com/info.0.json');
+    } else {
+      resolve('http://xkcd.com/' + comicNum + '/info.0.json');
+    }
+  }).then(function(comicUrl) {
+    return corsica.http(comicUrl);
+  })
+  .then(makeXkcdPage)
+  .catch(function(err) {
+    console.error('[xkcd]', 'Error:', err.stack || err);
   });
 }
 
