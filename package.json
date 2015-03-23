@@ -1,6 +1,6 @@
 {
   "name": "corsica-xkcd",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A Corsica plugin to display XKCD comics.",
   "main": "index.js",
   "scripts": {
