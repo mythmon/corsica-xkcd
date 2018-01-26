@@ -25,7 +25,7 @@ module.exports = function(corsica_) {
   corsica = corsica_;
 
   corsica.on('content', function(content) {
-    var match = /^(https?://)?(www\.)?xkcd.com\/?(\d+)?\/?$/.exec(content.url);
+    var match = /^(https?:\/\/)?(www\.)?xkcd.com\/?(\d+)?\/?$/.exec(content.url);
     if (content.type === 'url' && match) {
       return makeComicContent(match[1])
         .then(function(comicContent) {
