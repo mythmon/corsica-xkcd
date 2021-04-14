@@ -16,8 +16,6 @@
 
 var format = require('util').format;
 
-var Promise = require('es6-promise').Promise;
-
 var log = console.log.bind(console, '[xkcd]');
 var corsica;
 
